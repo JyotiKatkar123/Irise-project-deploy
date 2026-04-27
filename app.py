@@ -3,12 +3,13 @@ import pickle
 import numpy as np
 import os
 
-# Set page config
+# Set page configuration
 st.set_page_config(page_title="Diabetes Prediction System", layout="wide")
 
-# Modern Professional Styling
+# Professional CSS
 st.markdown("""
     <style>
+    .stApp { background-color: #f4f7f6; }
     .main-card {
         background-color: #ffffff;
         padding: 40px;
@@ -17,7 +18,6 @@ st.markdown("""
         max-width: 900px;
         margin: auto;
     }
-    .title-text { color: #2c3e50; text-align: center; font-weight: 700; }
     .prediction-line {
         width: 100%;
         text-align: center;
@@ -39,26 +39,35 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Corrected Loading Logic
+# Corrected load_model function
 @st.cache_resource
 def load_model():
     model_path = 'model.pkl'
-    if os.path.exists(model_path):
+    # Step 1: Check if file exists
+    if not os.path.exists(model_path):
+        return "file_missing"
+    
+    try:
         with open(model_path, 'rb') as file:
             return pickle.load(file)
-    else:
-        return None
+    except Exception as e:
+        # This catches errors if scikit-learn is missing or version is wrong
+        return str(e)
 
-model = load_model()
+model_result = load_model()
 
-# UI Layout
 st.markdown('<div class="main-card">', unsafe_allow_html=True)
-st.markdown('<h1 class="title-text">Diabetes Prediction System</h1>', unsafe_allow_html=True)
+st.markdown('<h1 style="text-align:center;">Diabetes Prediction using ML</h1>', unsafe_allow_html=True)
 
-if model is None:
-    st.error("Error: 'model.pkl' not found. Please ensure the file is in the same directory.")
+# Error Handling UI
+if model_result == "file_missing":
+    st.error("🚨 'model.pkl' not found! Make sure it is uploaded to your GitHub repository.")
+elif isinstance(model_result, str):
+    st.error(f"🚨 Model Load Error: {model_result}")
+    st.info("Check if 'scikit-learn' is in your requirements.txt file.")
 else:
-    # Grid Layout matching your requirements
+    model = model_result
+    # UI Layout matching your reference
     r1_c1, r1_c2, r1_c3 = st.columns(3)
     with r1_c1:
         pregnancies = st.number_input("Pregnancies", min_value=0, step=1, value=0)
@@ -82,15 +91,14 @@ else:
         age = st.number_input("Age", min_value=0, step=1, value=33)
 
     if st.button("PREDICT"):
-        # Features must be in exact order
         features = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, 
                               insulin, bmi, dpf, age]])
         
         prediction = model.predict(features)
         
         if prediction[0] == 1:
-            st.markdown('<div class="prediction-line" style="background-color: #e74c3c;">Result: The person is Diabetic</div>', unsafe_allow_html=True)
+            st.markdown('<div class="prediction-line" style="background-color: #e74c3c;">The person is Diabetic</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="prediction-line" style="background-color: #2ecc71;">Result: The person is Not Diabetic</div>', unsafe_allow_html=True)
+            st.markdown('<div class="prediction-line" style="background-color: #2ecc71;">The person is Not Diabetic</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
