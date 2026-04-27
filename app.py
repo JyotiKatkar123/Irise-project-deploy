@@ -1,24 +1,26 @@
 import streamlit as st
+import pickle
+import numpy as np
 
+# Load model
+model = pickle.load(open("model.pkl", "rb"))
 
-# This caches the model so it doesn't reload on every button click
-@st.cache_resource
-def load_model():
-    return pipeline('sentiment-analysis')
+# Title
+st.title("Machine Learning Model App")
 
-obj = load_model()
+st.write("Enter input values to get prediction")
 
-st.title("Sentiment Analyzer")
-st.write("Enter text below to see if it's Positive or Negative.")
+# Example inputs (modify based on your model)
+feature1 = st.number_input("Enter Feature 1")
+feature2 = st.number_input("Enter Feature 2")
+feature3 = st.number_input("Enter Feature 3")
 
-txt = st.text_input("Input text:", "I like this product")
-
-if st.button("Analyze"):
-    re = obj(txt)
-    label = re[0]['label']
-    score = re[0]['score']
+# Predict button
+if st.button("Predict"):
+    # Convert input into array
+    input_data = np.array([[feature1, feature2, feature3]])
     
-    if label == 'POSITIVE':
-        st.success(f"Result: {label} (Score: {score:.4f})")
-    else:
-        st.error(f"Result: {label} (Score: {score:.4f})")
+    # Prediction
+    prediction = model.predict(input_data)
+    
+    st.success(f"Prediction: {prediction[0]}")
