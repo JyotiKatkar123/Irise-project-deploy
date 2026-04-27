@@ -1,5 +1,5 @@
 import streamlit as st
-from transformers import pipeline
+
 
 # This caches the model so it doesn't reload on every button click
 @st.cache_resource
