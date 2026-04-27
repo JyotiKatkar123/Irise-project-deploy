@@ -3,10 +3,10 @@ import pickle
 import numpy as np
 import os
 
-# Set page configuration
+# Page Config
 st.set_page_config(page_title="Diabetes Prediction System", layout="wide")
 
-# Modern Styling
+# Modern Professional Styling
 st.markdown("""
     <style>
     .stApp { background-color: #f4f7f6; }
@@ -33,10 +33,13 @@ st.markdown("""
 @st.cache_resource
 def load_model():
     try:
+        # Step 1: Check if file exists
+        if not os.path.exists('model.pkl'):
+            return "FILE_NOT_FOUND"
+        
         with open('model.pkl', 'rb') as file:
             return pickle.load(file)
-    except ModuleNotFoundError:
-        return "SKLEARN_MISSING"
+            
     except Exception as e:
         return str(e)
 
@@ -45,33 +48,35 @@ model_result = load_model()
 st.markdown('<div class="main-card">', unsafe_allow_html=True)
 st.markdown('<h1 style="text-align:center;">Diabetes Prediction System</h1>', unsafe_allow_html=True)
 
-if model_result == "SKLEARN_MISSING":
-    st.error("### 🚨 Critical Error: Scikit-Learn Not Found")
-    st.info("To fix this: Add **scikit-learn** to your **requirements.txt** file in GitHub and wait for the app to reboot.")
+# Logic to handle different types of errors
+if model_result == "FILE_NOT_FOUND":
+    st.error("🚨 'model.pkl' is missing from your GitHub repository.")
 elif isinstance(model_result, str):
-    st.error(f"Error loading model: {model_result}")
+    st.error(f"### 🚨 Model Compatibility Error")
+    st.write(f"Details: {model_result}")
+    st.info("Check if your **requirements.txt** has: **scikit-learn==1.2.2**")
 else:
-    # Use the loaded model
     model = model_result
     
-    # Input Grid
+    # Feature Input Grid (Exact values from your previous layout)
     r1_c1, r1_c2, r1_c3 = st.columns(3)
-    with r1_c1: pregnancies = st.number_input("Pregnancies", value=0)
-    with r1_c2: glucose = st.number_input("Glucose", value=120.0)
-    with r1_c3: blood_pressure = st.number_input("Blood Pressure", value=70.0)
+    with r1_c1: preg = st.number_input("Pregnancies", value=0)
+    with r1_c2: gluc = st.number_input("Glucose", value=120.0)
+    with r1_c3: bp = st.number_input("Blood Pressure", value=70.0)
 
     r2_c1, r2_c2, r2_c3 = st.columns(3)
-    with r2_c1: skin_thickness = st.number_input("Skin Thickness", value=20.0)
-    with r2_c2: insulin = st.number_input("Insulin", value=80.0)
+    with r2_c1: skin = st.number_input("Skin Thickness", value=20.0)
+    with r2_c2: ins = st.number_input("Insulin", value=80.0)
     with r2_c3: bmi = st.number_input("BMI", value=25.0)
 
-    r3_spacer, r3_c1, r3_c2, r3_spacer2 = st.columns([0.1, 1, 1, 0.1])
+    r3_sp, r3_c1, r3_c2, r3_sp2 = st.columns([0.1, 1, 1, 0.1])
     with r3_c1: dpf = st.number_input("Diabetes Pedigree Function", value=0.471, format="%.3f")
     with r3_c2: age = st.number_input("Age", value=33)
 
     if st.button("PREDICT"):
-        features = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, dpf, age]])
-        prediction = model.predict(features)
+        # Order: [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]
+        input_data = np.array([[preg, gluc, bp, skin, ins, bmi, dpf, age]])
+        prediction = model.predict(input_data)
         
         if prediction[0] == 1:
             st.markdown('<div class="prediction-line" style="background-color: #e74c3c;">The person is Diabetic</div>', unsafe_allow_html=True)
