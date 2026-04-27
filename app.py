@@ -2,12 +2,14 @@ import streamlit as st
 import pickle
 import numpy as np
 
-# Load the trained model
+# Line 8: Added decorator to cache the model in memory
+@st.cache_resource
 def load_model():
+    # Line 11: Ensure the model is returned correctly
     with open('model.pkl', 'rb') as file:
-        model = pickle.load(file)
-    return model
+        return pickle.load(file)
 
+# Call the function to load your model
 model = load_model()
 
 st.title("Health Metric Prediction App")
